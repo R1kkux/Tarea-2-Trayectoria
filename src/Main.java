@@ -20,7 +20,7 @@ public class Main {
 
         if (eleccion == 1) {
             filePath = "src/Trayectorias/puntosFigura1.csv";
-        } else if (eleccion == 2) {
+        } else {
             System.out.println("\nEl archivo debe colocarse en la carpeta \"src\\Trayectorias\"");
             System.out.println("El nombre del archivo debe tener la forma: <trayectoria_(cantPuntos).csv>");
             System.out.println("\tA continuacion, introduzca el valor que tiene cantPuntos en el nombre del archivo:");
@@ -28,9 +28,7 @@ public class Main {
             System.out.print("> ");
             int cantPuntos = sc.nextInt();
 
-             filePath = "src/Trayectorias/trayectoria_" +cantPuntos +".csv";
-        } else if (eleccion == 3) {
-            trayectoriaOriginal = crearManaulemtne();
+            filePath = "src/Trayectorias/trayectoria_" + cantPuntos + ".csv";
         }
 
         if (!(filePath.isBlank())) {
@@ -38,14 +36,20 @@ public class Main {
                 trayectoriaOriginal = leerArchivo(filePath);
             } catch (TrayException e) {
                 System.out.println(e.getMessage());
+                return;
             }
+        }
+
+        if (trayectoriaOriginal.isEmpty()) {
+            System.out.println("Error: La trayectoria no contiene puntos.");
+            return;
         }
 
         System.out.print("\nA continuacion, ingrese la tolerancia al momento de simplificar la trayectoria: ");
         double tolerancia = sc.nextDouble();
 
         long inicio1 = System.nanoTime();
-        List<Punto> simplificada = RaumerDouglasPeucker(trayectoriaOriginal, tolerancia);
+        List<Punto> simplificada = RamerDouglasPeucker(trayectoriaOriginal, tolerancia);
         long final1 = System.nanoTime();
 
         long duracion1 = final1 - inicio1;
@@ -66,7 +70,7 @@ public class Main {
         System.out.println("\n> El programa tardo " +tiempo + " milisegundos en simplificar la trayectoria.");
     }
 
-    public static List<Punto> RaumerDouglasPeucker(List<Punto> trayectoria, double tolerancia) {
+    public static List<Punto> RamerDouglasPeucker(List<Punto> trayectoria, double tolerancia) {
         if (trayectoria.size() <= 2) {
             return trayectoria;
         }
@@ -91,8 +95,8 @@ public class Main {
 
         // Si la distancia máxima es mayor a la tolerancia, se conserva Q y se divide el problema
         if (maxDistancia > tolerancia) {
-            List<Punto> subTrayectoriaIzq = RaumerDouglasPeucker(trayectoria.subList(0, indiceMax + 1), tolerancia);
-            List<Punto> subTrayectoriaDer = RaumerDouglasPeucker(trayectoria.subList(indiceMax, trayectoria.size()), tolerancia);
+            List<Punto> subTrayectoriaIzq = RamerDouglasPeucker(trayectoria.subList(0, indiceMax + 1), tolerancia);
+            List<Punto> subTrayectoriaDer = RamerDouglasPeucker(trayectoria.subList(indiceMax, trayectoria.size()), tolerancia);
 
             trayectoriaSimplificada.addAll(subTrayectoriaIzq.subList(0, subTrayectoriaIzq.size() - 1));
             trayectoriaSimplificada.addAll(subTrayectoriaDer);
@@ -139,30 +143,5 @@ public class Main {
         }
 
         return trayectoriaOriginal;
-    }
-
-    public static List<Punto> crearManaulemtne() {
-        System.out.println("Escribe los puntos de la siguiente forma: <x,y>");
-            System.out.println("\t Ingresa un par de letras para dejar de ingresar pares");
-
-            List<Punto> puntos = new ArrayList<>();
-            String[] texto;
-        try {
-            while (true) {
-                System.out.print("> ");
-                texto = sc.next().trim().split(",");
-
-                if (texto.length != 2) {
-                    System.out.println("Se ha ingresado incorrectamente el par.");
-                    continue;
-                }
-
-                puntos.add(new Punto(Double.parseDouble(texto[0]), Double.parseDouble(texto[1])));
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Se han terminado de escribir pares. Se han añadido " +puntos.size() +" puntos");
-        }
-
-        return puntos;
     }
 }
