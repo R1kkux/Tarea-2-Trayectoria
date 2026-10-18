@@ -10,25 +10,33 @@ public class Main {
         System.out.println("\t1. Usar los puntos de la figura 1 del enunciado");
         System.out.println("\t2. Importar los puntos desde un archivo externo");
         System.out.println("\t3. Ingresar los puntos manualmente");
+        System.out.println("\t4. Ejecutar TODOS los experimentos automaticamente (Exportar CSV)");
 
         System.out.print("> ");
         int eleccion = sc.nextInt();
 
-        List<Punto> trayectoriaOriginal = new ArrayList<>();
+        // Nueva opción para la generación automática
+        if (eleccion == 4) {
+            ejecutarExperimentosAutomatizados();
+            return;
+        }
 
+        List<Punto> trayectoriaOriginal = new ArrayList<>();
         String filePath = "";
 
         if (eleccion == 1) {
             filePath = "src/Trayectorias/puntosFigura1.csv";
-        } else {
+        } else if (eleccion == 2) {
             System.out.println("\nEl archivo debe colocarse en la carpeta \"src\\Trayectorias\"");
             System.out.println("El nombre del archivo debe tener la forma: <trayectoria_(cantPuntos).csv>");
             System.out.println("\tA continuacion, introduzca el valor que tiene cantPuntos en el nombre del archivo:");
-
             System.out.print("> ");
             int cantPuntos = sc.nextInt();
-
             filePath = "src/Trayectorias/trayectoria_" + cantPuntos + ".csv";
+        } else if (eleccion == 3) {
+            // Lógica para ingreso manual que ya tengas implementada
+            System.out.println("Funcionalidad de ingreso manual...");
+            return;
         }
 
         if (!(filePath.isBlank())) {
@@ -55,19 +63,52 @@ public class Main {
         long duracion1 = final1 - inicio1;
         double tiempo = duracion1 / 1_000_000.0;
 
-                System.out.println("\n\n\t == Resultados finales ==");
-
+        System.out.println("\n\n\t == Resultados finales ==");
         System.out.println("> La trayectoria original contiene " + trayectoriaOriginal.size() + " puntos.");
-
         System.out.println("> La trayectoria simplificada contiene "+ simplificada.size() + " puntos.");
         System.out.println("\t = La tolerancia utilizada fue de " + tolerancia + " unidades.");
 
         int puntosEliminados = trayectoriaOriginal.size() -  simplificada.size();
+        System.out.println("\n> Un total de " + puntosEliminados +" puntos fueron eliminados");
+        System.out.println("\t Esto corresponde al " + ((100.00 * puntosEliminados) / trayectoriaOriginal.size()) + "% de los puntos originales.");
+        System.out.println("\n> El programa tardo " + tiempo + " milisegundos en simplificar la trayectoria.");
+    }
 
-        System.out.println("\n> Un total de " +puntosEliminados +" puntos fueron eliminados");
-        System.out.println("\t Esto corresponde al " + ((100.00 * puntosEliminados) / trayectoriaOriginal.size()) +"% de los puntos originales.");
+    public static void ejecutarExperimentosAutomatizados() {
+        int[] tamanos = {1000, 5000, 10000, 20000, 30000, 50000};
+        double[] tolerancias = {0.001, 0.01, 0.1, 0.5, 1.0, 10.0};
 
-        System.out.println("\n> El programa tardo " +tiempo + " milisegundos en simplificar la trayectoria.");
+        try (java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.File("resultados_experimentos.csv"))) {
+            writer.println("Tamanio_Original,Tolerancia,Puntos_Eliminados,Porcentaje_Simplificacion,Tiempo_ms");
+
+            for (int tamano : tamanos) {
+                String filePath = "src/Trayectorias/trayectoria_" + tamano + ".csv";
+                List<Punto> trayectoriaOriginal;
+
+                try {
+                    trayectoriaOriginal = leerArchivo(filePath);
+                } catch (TrayException e) {
+                    System.out.println("Saltando " + filePath + ": " + e.getMessage());
+                    continue;
+                }
+
+                for (double epsilon : tolerancias) {
+                    long inicio = System.nanoTime();
+                    List<Punto> simplificada = RamerDouglasPeucker(trayectoriaOriginal, epsilon);
+                    long finalTiempo = System.nanoTime();
+
+                    double tiempoMs = (finalTiempo - inicio) / 1_000_000.0;
+                    int eliminados = trayectoriaOriginal.size() - simplificada.size();
+                    double porcentaje = (100.0 * eliminados) / trayectoriaOriginal.size();
+
+                    writer.printf(Locale.US, "%d,%.3f,%d,%.2f,%.4f\n", tamano, epsilon, eliminados, porcentaje, tiempoMs);
+                }
+            }
+            System.out.println("\n> Experimentos finalizados con exito.");
+            System.out.println("> Resultados guardados en 'resultados_experimentos.csv'.");
+        } catch (Exception e) {
+            System.out.println("Error al generar el archivo CSV: " + e.getMessage());
+        }
     }
 
     public static List<Punto> RamerDouglasPeucker(List<Punto> trayectoria, double tolerancia) {
