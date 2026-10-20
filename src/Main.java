@@ -9,7 +9,6 @@ public class Main {
         System.out.println("\nSeleccione un metodo para registrar los puntos: ");
         System.out.println("\t1. Usar los puntos de la figura 1 del enunciado");
         System.out.println("\t2. Importar los puntos desde un archivo externo");
-        System.out.println("\t3. Ingresar los puntos manualmente");
 
         System.out.print("> ");
         int eleccion = sc.nextInt();
