@@ -9,14 +9,13 @@ public class Main {
         System.out.println("\nSeleccione un metodo para registrar los puntos: ");
         System.out.println("\t1. Usar los puntos de la figura 1 del enunciado");
         System.out.println("\t2. Importar los puntos desde un archivo externo");
-        System.out.println("\t3. Ingresar los puntos manualmente");
-        System.out.println("\t4. Ejecutar TODOS los experimentos automaticamente (Exportar CSV)");
+        System.out.println("\t3. Ejecutar TODOS los experimentos automaticamente (Exportar CSV)");
 
         System.out.print("> ");
         int eleccion = sc.nextInt();
 
         // Nueva opción para la generación automática
-        if (eleccion == 4) {
+        if (eleccion == 3) {
             ejecutarExperimentosAutomatizados();
             return;
         }
@@ -33,11 +32,7 @@ public class Main {
             System.out.print("> ");
             int cantPuntos = sc.nextInt();
             filePath = "src/Trayectorias/trayectoria_" + cantPuntos + ".csv";
-        } else if (eleccion == 3) {
-            // Lógica para ingreso manual que ya tengas implementada
-            System.out.println("Funcionalidad de ingreso manual...");
-            return;
-        }
+
 
         if (!(filePath.isBlank())) {
             try {
